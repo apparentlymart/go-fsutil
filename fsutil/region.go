@@ -20,14 +20,14 @@ type Region [][]byte
 // and last must be the same length, in which case we can avoid the need to
 // scan.)
 
-func RegionFromSlice(src []byte) Region {
+func RegionForBytes(src []byte) Region {
 	return Region([][]byte{
 		src,
 	})
 }
 
 func RegionFromString(src string) Region {
-	return RegionFromSlice([]byte(src))
+	return RegionForBytes([]byte(src))
 }
 
 func (r Region) Slice(offset, length int) Region {
