@@ -32,7 +32,7 @@ type DirEntryCommon struct {
 type DirEntryDir struct {
 	DirEntryCommon
 
-	Directory Directory
+	Directory *Directory
 }
 
 type DirEntryFile struct {
@@ -60,19 +60,39 @@ func (e *DirEntryCommon) LFNEntryCount() int {
 //
 // It takes into account cluster, meaning that all file sizes are rounded
 // up to the nearest cluster.
-func (d *Directory) TotalClusters() int {
+func (d *Directory) TotalClusters(isRoot bool) int {
 
 	// Each directory entry takes 32 bytes
 	tableBytes := 0
 	dataClusters := 0
 	for _, entry := range d.Dirs {
 		tableBytes += 32 * (entry.LFNEntryCount() + 1)
-		dataClusters += entry.Directory.TotalClusters()
+		dataClusters += entry.Directory.TotalClusters(false)
 	}
 	for _, entry := range d.Files {
 		tableBytes += 32 * (entry.LFNEntryCount() + 1)
 		fileSize := entry.BodyBuilder.Length()
 		dataClusters += (fileSize / clusterSize) + 1
 	}
+	if isRoot {
+		// Root directory also contains the volume label record
+		tableBytes += 32
+	}
 	return dataClusters + (tableBytes / clusterSize) + 1
+}
+
+func (d *Directory) TableBytes(isRoot bool) int {
+	// Each directory entry takes 32 bytes
+	tableBytes := 0
+	for _, entry := range d.Dirs {
+		tableBytes += 32 * (entry.LFNEntryCount() + 1)
+	}
+	for _, entry := range d.Files {
+		tableBytes += 32 * (entry.LFNEntryCount() + 1)
+	}
+	if isRoot {
+		// Root directory also contains the volume label record
+		tableBytes += 32
+	}
+	return tableBytes
 }

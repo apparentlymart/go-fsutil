@@ -228,7 +228,7 @@ func (r *Region) ReadU64BE(addr int) uint64 {
 	return uint64(r.ReadBE(addr, 8))
 }
 
-func (r *Region) WriteBytes(start int, src []byte) {
+func (r *Region) WriteBytes(start int, src []byte) int {
 	sub := r.Slice(start, len(src))
 	// Unless the caller gave us an array that is too long (which is their
 	// error) we should now have a sub-slice whose length matches the length of
@@ -237,6 +237,7 @@ func (r *Region) WriteBytes(start int, src []byte) {
 	for _, buf := range sub {
 		ofs += copy(buf, src[ofs:])
 	}
+	return ofs
 }
 
 func (r *Region) WriteSubregion(addr int, builder RegionBuilder) {
